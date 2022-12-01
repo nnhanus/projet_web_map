@@ -1,0 +1,74 @@
+html,
+body {
+  height: 100%
+}
+
+#loginbox{
+    border:1px solid grey;
+    padding:10px;
+    border-radius:6px;
+    background: rgb(249,249,249);
+    background: linear-gradient(-45deg, rgba(249,249,249,1) 0%, rgba(211,208,242,1) 50%, rgba(225,250,255,1) 100%);
+    box-shadow: 10px 5px 5px rgba(0,0,0,0.5);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+#container {
+  padding: 10px;
+  display:grid;
+  grid-template-columns: repeat(1, 1fr);
+  grid-template-rows: 100px auto 50px;
+  height: calc(100vh - 20px);
+}
+
+#header {
+  background: #167d7f;
+  color: #fff;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: auto 200px;
+  text-align: center;
+}
+
+#content {
+  background: #fff;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+}
+
+#content-center {
+  grid-column: 2/6;
+  border-top: solid rgb(200, 200, 200) 2px;
+  border-bottom: solid rgb(200, 200, 200) 2px;
+  padding: 10px;
+}
+
+#content-left {
+  border: solid rgb(200, 200, 200) 2px;
+  padding: 10px;
+}
+
+#content-right {
+  border: solid rgb(200, 200, 200) 2px;
+  padding: 10px;
+}
+
+#footer {
+  background: #6F2DA8;
+  text-align: center;
+}
+
+.nav-left{
+  display: grid;
+  grid-template-rows: repeat(3, 1fr);
+  grid-gap: 5px;
+  padding: 10px;
+}
+
+#map { height: 500px; }
+
+
+https://coolors.co/palette/10002b-240046-3c096c-5a189a-7b2cbf-9d4edd-c77dff-e0aaff
