@@ -4,9 +4,32 @@ const expressLayouts = require('express-ejs-layouts') // Import express layouts
 const app = express();              //Instantiate an express app, the main work horse of this server
 const port = 8080;                  //Save the port number where your server will be listening
 
+
+
+
+/// TODOS:
+
+// Distribute path between users
+// Uncolored path, get path -> color it = make it unavailable (and save which group has it)
+// then un-assign paths
+// - server side : assign pass
+// - client side : choose path, quit path
+
+// Point of interest on path
+// Load POIs array and show the one next to a path 
+// - server side : -
+// - client side : - 
+
+// JSON datas :
+
+// Path : points[], color(default:black)
+// POIs : [ points, description, ?icon (pathto/svg...) ] 
+
+
 /*********************************/
 /** DEFINITIONS TO USE SESSIONS **/
 /*********************************/
+
 // Declare sessions
 const sessions = require('express-session');
 const oneDay = 1000 * 60 * 60 * 24;
@@ -16,10 +39,6 @@ app.use(sessions({
     cookie: { maxAge: oneDay },
     resave: false 
 }));
-
-//username and password
-const myusername = 'f@f.com'
-const mypassword = 'f'
 
 // a variable to save a session
 var session;
