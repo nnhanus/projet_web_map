@@ -1,6 +1,6 @@
 html,
 body {
-  height: 100%
+  height: 100%;
 }
 
 #loginbox{
@@ -22,6 +22,7 @@ body {
   grid-template-columns: repeat(1, 1fr);
   grid-template-rows: 100px auto 50px;
   height: calc(100vh - 20px);
+  background-color: black;
 }
 
 #header {
@@ -34,7 +35,7 @@ body {
 }
 
 #content {
-  background: #fff;
+  background-color: black;
   display: grid;
   grid-template-columns: repeat(6, 1fr);
 }
@@ -49,6 +50,7 @@ body {
 #content-left {
   border: solid rgb(200, 200, 200) 2px;
   padding: 10px;
+  color : #fff
 }
 
 #content-right {
@@ -71,4 +73,4 @@ body {
 #map { height: 500px; }
 
 
-https://coolors.co/palette/10002b-240046-3c096c-5a189a-7b2cbf-9d4edd-c77dff-e0aaff
+/*https://coolors.co/palette/10002b-240046-3c096c-5a189a-7b2cbf-9d4edd-c77dff-e0aaff*/
