@@ -7,7 +7,7 @@ module.exports.loginUser = function (req, res){
         res.render("index.ejs", {'userid':session.userid})
     }
     else{
-        console.log(req.body.username +" do not match "+req.body.password)
+        console.log(req.body.username +" do not match " + req.body.password)
         res.send('Invalid username or password.<a href="/">Try again</a>');
     }
 }

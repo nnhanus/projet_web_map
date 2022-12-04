@@ -90,7 +90,6 @@ app.set('layout', './layouts/base-layout.ejs')
 app.get('', (req, res) => {
   session=req.session;
     if(session.userid){
-      res.render("index.ejs", {'userid':session.userid, 'username': session.username})
     }else
       res.sendFile('views/login.html',{root:__dirname})
 })
