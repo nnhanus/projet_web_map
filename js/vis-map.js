@@ -9,21 +9,25 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 function create_polyline(data)
 {
-	var polyline = L.polyline(data.path, {color: 'red'}).addTo(map);
+	var polyline;
+	data.paths.forEach(element => {
+		polyline = L.polyline(element, {color: 'black'}).addTo(map);
 
-	polyline.on('click', (event) =>
-	{
-		var popLocation= event.latlng;
+	
+		polyline.on('click', (event) =>
+		{
+			var popLocation= event.latlng;
 
-		L.popup()
-		.setLatLng(popLocation)
-		.setContent('<p> Hello world!<br />This is a nice popup. </p>')
-		.openOn(map);
-		
-		polyline.setStyle({color:'blue'});
-		polyline.redraw();
-		
-		selected = polyline;
+			L.popup()
+			.setLatLng(popLocation)
+			.setContent('<p> Hello world!<br />This is a nice popup. </p>')
+			.openOn(map);
+			
+			polyline.setStyle({color:'blue'});
+			polyline.redraw();
+			
+			selected = polyline;
+		});
 	});
 
 	map.fitBounds(polyline.getBounds());

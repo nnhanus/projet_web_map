@@ -80,8 +80,6 @@ app.use(expressLayouts)
 app.set('layout', './layouts/base-layout.ejs')
 
 
-
-
 /*********************************/
 /************ Routes *************/
 /*********************************/
