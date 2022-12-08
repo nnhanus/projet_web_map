@@ -8,24 +8,10 @@
 </div>
 
 <% for(color of team_colors){ %>
-	<div class="form-check">
-		<input onclick="set_team('<%= color %>')" class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1">
+	<div class="color-form-check" >
+		<input style="background-color: <%= color %>;" onclick="set_team('<%= color %>')" class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1">
 		<label class="form-check-label" for="flexRadioDefault1">
-			<%= color %> team
+			Team <%= color %>
 		</label>
 	</div>
 <% }%>
-
-<!-- <div class="form-check">
-  <input onclick="set_team('red')" class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1">
-  <label class="form-check-label" for="flexRadioDefault1">
-    Red team
-  </label>
-</div>
-
-<div class="form-check">
-  <input onclick="set_team('green')" class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2">
-  <label class="form-check-label" for="flexRadioDefault2">
-    Green team
-  </label>
-</div> -->
