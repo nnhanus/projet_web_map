@@ -1,14 +1,22 @@
 <h1>Filters</h1>
 
-
 <div class="form-check">
-  <input onclick="set_team('blue')" class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault0" checked>
+  <input onclick="set_team('black')" class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault0" checked>
   <label class="form-check-label" for="flexRadioDefault2">
     Not assigned yet
   </label>
 </div>
 
-<div class="form-check">
+<% for(color of team_colors){ %>
+	<div class="form-check">
+		<input onclick="set_team('<%= color %>')" class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1">
+		<label class="form-check-label" for="flexRadioDefault1">
+			<%= color %> team
+		</label>
+	</div>
+<% }%>
+
+<!-- <div class="form-check">
   <input onclick="set_team('red')" class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1">
   <label class="form-check-label" for="flexRadioDefault1">
     Red team
@@ -20,4 +28,4 @@
   <label class="form-check-label" for="flexRadioDefault2">
     Green team
   </label>
-</div>
+</div> -->

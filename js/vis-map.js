@@ -9,11 +9,14 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 function create_polyline(data)
 {
+	var polyline;
 	data.paths.forEach(element => {
-		var polyline = L.polyline(element, {color: 'black'}).addTo(map);
+		polyline = L.polyline(element, {color: 'black'}).addTo(map);
+		map.fitBounds(polyline.getBounds());
 
 	
-		polyline.on('click', (event) =>
+		polyline.on('click', 
+		(event) =>
 		{
 			var popLocation= event.latlng;
 
@@ -22,13 +25,15 @@ function create_polyline(data)
 			.setContent('<p> Hello world!<br />This is a nice popup. </p>')
 			.openOn(map);
 			
-			polyline.setStyle({color:'blue'});
+			if(selected) selected.setStyle({weight:3});
+			polyline.setStyle({weight:5});
 			polyline.redraw();
 			
 			selected = polyline;
 		});
 	});
 
+	
 }
 
 function set_team(color)

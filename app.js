@@ -96,7 +96,20 @@ app.get('/vis', function (req, res) {
   session=req.session;
   if(session.userid){
     console.log(session.userid)
-    res.render("vis.ejs", {'userid':session.userid, 'username': session.username})
+    res.render("vis.ejs", 
+		{
+			'userid':session.userid, 
+			'username': session.username,
+			'team_colors':
+			[
+				'red',
+				'green',
+				'blue',
+				'yellow',
+				'cyan',
+				'magenta'
+			]
+		})
   } else
     res.sendFile('views/login.html',{root:__dirname})
 })
