@@ -85,16 +85,18 @@ app.set('layout', './layouts/base-layout.ejs')
 /*********************************/
 
 // MAIN
-app.get('', (req, res) => {
+app.get('/', (req, res) => 
+{
   session=req.session;
-    if(session.userid){
-    }else
-      res.sendFile('views/login.html',{root:__dirname})
+	if(!session.userid) res.sendFile('views/login.html',{root:__dirname})
+	else res.render('index.ejs', {userid:session.userid})
 })
 
 app.get('/vis', function (req, res) {
   session=req.session;
-  if(session.userid){
+  if(!session.userid) res.sendFile('views/login.html',{root:__dirname});
+	else
+	{
     console.log(session.userid)
     res.render("vis.ejs", 
 		{
@@ -110,8 +112,8 @@ app.get('/vis', function (req, res) {
 				'magenta'
 			]
 		})
-  } else
-    res.sendFile('views/login.html',{root:__dirname})
+  }
+    
 })
 
 const userRoutes = require('./routes/user')

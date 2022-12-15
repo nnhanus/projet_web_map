@@ -1,5 +1,6 @@
 var map = L.map('map').setView([51.505, -0.09], 13);
-var selected;
+
+var selected_path;
 
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 	maxZoom: 19,
@@ -24,11 +25,11 @@ function create_polyline(data)
 			.setContent('<p> Hello world!<br />This is a nice popup. </p>')
 			.openOn(map);
 			
-			if(selected) selected.setStyle({weight:3});
+			if(selected_path) selected_path.setStyle({weight:3});
 			polyline.setStyle({weight:5});
 			polyline.redraw();
 			
-			selected = polyline;
+			selected_path = polyline;
 		});
 	});
 
@@ -37,10 +38,10 @@ function create_polyline(data)
 
 function set_team(color)
 {
-	if(selected)
+	if(selected_path)
 	{
-		selected.setStyle({color:color});
-		selected.redraw();
+		selected_path.setStyle({color:color});
+		selected_path.redraw();
 	}
 }
 
