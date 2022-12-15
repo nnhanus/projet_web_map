@@ -9,9 +9,8 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 function create_polyline(data)
 {
-	var polyline;
 	data.paths.forEach(element => {
-		polyline = L.polyline(element, {color: 'black'}).addTo(map);
+		var polyline = L.polyline(element, {color: 'black'}).addTo(map);
 		map.fitBounds(polyline.getBounds());
 
 	
