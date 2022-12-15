@@ -1,8 +1,10 @@
 const express = require('express'); //Import the express dependency
+
 const path = require('path')
 const expressLayouts = require('express-ejs-layouts') // Import express layouts 
 const app = express();              //Instantiate an express app, the main work horse of this server
 const port = 8080;                  //Save the port number where your server will be listening
+
 
 
 
@@ -97,7 +99,6 @@ app.get('/vis', function (req, res) {
   if(!session.userid) res.sendFile('views/login.html',{root:__dirname});
 	else
 	{
-    console.log(session.userid)
     res.render("vis.ejs", 
 		{
 			'userid':session.userid, 

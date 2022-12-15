@@ -7,11 +7,24 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 	attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
 
+  
+const options = {
+	attributeNamePrefix : "",
+	//attrNodeName: false,
+	//textNodeName : "#text",
+	ignoreAttributes : false,
+	ignoreNameSpace: false,
+  };
+
+const parser = new XMLParser(options);
+  
+
+
 
 function create_polyline(data)
 {
-	data.paths.forEach(element => {
-		var polyline = L.polyline(element, {color: 'black'}).addTo(map);
+	
+		var polyline = L.polyline(data, {color: 'black'}).addTo(map);
 		map.fitBounds(polyline.getBounds());
 
 	
@@ -31,10 +44,7 @@ function create_polyline(data)
 			
 			selected_path = polyline;
 		});
-	});
-
-	
-}
+	}
 
 function set_team(color)
 {
@@ -45,8 +55,23 @@ function set_team(color)
 	}
 }
 
-$.getJSON('get-path', function(data)
+$.get('../data/fred-path.gpx', function(data)
 {
+	console.log("debut")
 	console.log(data)
-	create_polyline(data);
+	let jObj = parser.parse(data.documentElement.outerHTML);
+	console.log("parser")
+	console.log(jObj)
+	console.log(jObj.gpx.trk.trkseg)
+	let myarr2 = []
+	for (pt of jObj.gpx.trk.trkseg.trkpt)
+		myarr2.push([parseFloat(pt.lat),parseFloat(pt.lon)])
+	create_polyline(myarr2);
+	/*console.log("data")
+	console.log(data)
+	new L.GPX(data, {async: true}).on('loaded', function(e) {
+		console.log("e")
+		console.log(e)
+		map.fitBounds(e.target.getBounds());
+	  }).addTo(map);*/
 });
