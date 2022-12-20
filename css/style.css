@@ -56,6 +56,11 @@ body .btn-secondary{
   /* border-top: solid rgb(200, 200, 200) 2px;
   border-bottom: solid rgb(200, 200, 200) 2px; */
   padding: 10px;
+
+
+	/* display: flex;
+	flex-flow: column;
+	height: calc(100vh - 200px); */
 }
 
 #content-left {
@@ -64,7 +69,8 @@ body .btn-secondary{
   color : #e8d7fc
 }
 
-#myCanvas{
+#myCanvas
+{
   height: (100%-80px);
   width: 100%;
   background-color: white;
@@ -91,7 +97,10 @@ body .btn-secondary{
 
 #map 
 { 
-	height: calc(100vh - 200px); 
+	/* display: flex;
+	flex-flow: column; */
+	height: calc(100vh - 200px);
+	/* height: 100%; */
 }
 
 /*all elements in a popup have black font*/
