@@ -94,6 +94,19 @@ body .btn-secondary{
 	height: calc(100vh - 200px); 
 }
 
+/*all elements in a popup have black font*/
+popup *
+{
+	color: black;
+}
+
+/*head title have bold fonts & are larger than normal font size */
+popup h1
+{
+	font-weight: 700;
+	font-size: large;
+}
+
 
 
 
