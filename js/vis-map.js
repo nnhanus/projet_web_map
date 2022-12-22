@@ -1,6 +1,7 @@
 var map = L.map('map').setView([51.505, -0.09], 13);
 map.on('click', on_deselect);
 var selected_path;
+var selected_wp = [];
 var all_paths = [];
 
 var elevations = document.getElementById('elevations');
@@ -24,6 +25,9 @@ function on_deselect()
 		var ctx = elevations.getContext("2d");
 		ctx.canvas.width = 0;
 		ctx.canvas.height = 0;
+
+		for(wp of selected_wp) wp.remove();
+		selected_wp = [];
 	}
 }
 
@@ -63,7 +67,41 @@ function trace_elevations(path)
 	ctx.closePath();
 }
 
-function on_path_selection(path, wp)
+function display_popup_at(latlon, title, description)
+{
+	var popupcontent = ''
+		+'<popup>'
+		+ '<h1>' + title + '</h1>'
+		+ '<p>' + description + '</p>'
+		+'</popup>';
+	
+	L.popup()
+	.setLatLng(latlon)
+	.setContent(popupcontent)
+	.openOn(map);
+}
+
+function trace_mapwaypoints(waypoints)
+{
+	for(var point of waypoints)
+	{
+		let name = point.name;
+		let desc = point.desc;
+		var circle = L
+		.circle([point.lat, point.lon], {radius:2})
+		.addTo(map)
+		.on('click', 
+		(event)=>
+		{
+			L.DomEvent.stopPropagation(event); 
+			display_popup_at(event.latlng, name, desc);
+		});
+
+		selected_wp.push(circle);
+	}
+}
+
+function on_path_selection(path)
 {
 	on_deselect();
 	selected_path = path;
@@ -71,15 +109,16 @@ function on_path_selection(path, wp)
 	selected_path.polyline.setStyle({weight:5});
 	selected_path.polyline.redraw();
 
-	draw_canv(wp);
-	console.log("canv");
+	draw_canv(path.waypoints);
 
+	trace_mapwaypoints(path.waypoints);
 	trace_elevations(path);
 }
 
-function make_path(points, elevs, name, desc, wp)
+function make_path(points, elevs, name, desc, waypoints)
 {
 		var polyline = L.polyline(points, {color: 'black'}).addTo(map);
+
 		map.fitBounds(polyline.getBounds());
 
 		function dist(p0,p1){ return Math.sqrt(Math.pow(p1[0]-p0[0],2) + Math.pow(p1[1]-p0[1],2));}
@@ -92,12 +131,13 @@ function make_path(points, elevs, name, desc, wp)
 			dists.push(curr_dist);
 		}
 		
-		console.log(dists);
+		// console.log(dists);
 		var path =
 		{
 			name: name,
 			description: desc,
 			polyline: polyline,
+			waypoints: waypoints,
 			elevations: elevs,
 			distances: dists,
 			color: 'black',
@@ -108,22 +148,10 @@ function make_path(points, elevs, name, desc, wp)
 		polyline.on('click', 
 		(event) =>
 		{
-			var popLocation= event.latlng;
-
-			var popupcontent = ''
-				+'<popup>'
-				+ '<h1>' + name + '</h1>'
-				+ '<p>' + desc + '</p>'
-				+'</popup>';
-
-			L.popup()
-			.setLatLng(popLocation)
-			.setContent(popupcontent)
-			.openOn(map);
-			
-			on_path_selection(path, wp);
 			// prevent the map from getting the event.
 			L.DomEvent.stopPropagation(event); 
+			display_popup_at(event.latlng, name, desc);
+			on_path_selection(path);
 		});
 	}
 
@@ -144,14 +172,16 @@ function draw_canv(waypoints)
 	var ord = 10;
 
 	ctx.moveTo(20, 0);
-    ctx.lineTo(20, 400);
-    ctx.stroke();
+	ctx.lineTo(20, 400);
+	ctx.stroke();
 
+	
 	for (pt of waypoints)
 	{
-		ctx.fillText(pt[1], 20, ord);
+		ctx.fillText(pt.name, 0, ord);
+		ctx.fillText(pt.desc, 20, ord);
 		ord += 20;
-		console.log(pt[1]);
+		// console.log(pt.desc);
 	}
 
 }
@@ -181,13 +211,7 @@ $.get('../data/vane-path.gpx', function(data)
 		desc = desc.replace(/\[url=([^\]]+)\]([^\[]+)\[\/url\]/g, '<a href="$1">$2</a>');
 
 		var track_segment = parser.parse(track_xml).trkseg;
-		var wp = parser.parse(waypoints_xml);
-
-		let waypoints = [];
-		for (pt of wp.wpt)
-		{
-			waypoints.push([pt.name, pt.desc])
-		}
+		var waypoints = parser.parse(waypoints_xml).wpt;
 
 		let latlons = []
 		let elevs = []
