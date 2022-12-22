@@ -6,6 +6,7 @@ var all_paths = [];
 var elevations = document.getElementById('elevations');
 var map_html = document.getElementById('map');
 
+
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', 
 {
 	maxZoom: 19,
@@ -44,6 +45,7 @@ function trace_elevations(path)
 
 	ctx.beginPath();
 	ctx.strokeStyle = 'white';
+	ctx.lineWidth = 3;
 	ctx.moveTo(0, cnv_h);
 	let max_e = 0;
 
@@ -61,7 +63,7 @@ function trace_elevations(path)
 	ctx.closePath();
 }
 
-function on_path_selection(path)
+function on_path_selection(path, wp)
 {
 	on_deselect();
 	selected_path = path;
@@ -69,10 +71,13 @@ function on_path_selection(path)
 	selected_path.polyline.setStyle({weight:5});
 	selected_path.polyline.redraw();
 
-	// trace_elevations(path);
+	draw_canv(wp);
+	console.log("canv");
+
+	trace_elevations(path);
 }
 
-function make_path(points, elevs, name, desc)
+function make_path(points, elevs, name, desc, wp)
 {
 		var polyline = L.polyline(points, {color: 'black'}).addTo(map);
 		map.fitBounds(polyline.getBounds());
@@ -116,7 +121,7 @@ function make_path(points, elevs, name, desc)
 			.setContent(popupcontent)
 			.openOn(map);
 			
-			on_path_selection(path);
+			on_path_selection(path, wp);
 			// prevent the map from getting the event.
 			L.DomEvent.stopPropagation(event); 
 		});
@@ -132,6 +137,24 @@ function set_team(color)
 	}
 }
 
+function draw_canv(waypoints)
+{
+	var canv = document.getElementById('myCanvas');
+	var ctx = canv.getContext('2d');
+	var ord = 10;
+
+	ctx.moveTo(20, 0);
+    ctx.lineTo(20, 400);
+    ctx.stroke();
+
+	for (pt of waypoints)
+	{
+		ctx.fillText(pt[1], 20, ord);
+		ord += 20;
+		console.log(pt[1]);
+	}
+
+}
 
 const options = 
 {
@@ -145,18 +168,26 @@ const options =
 
 const parser = new XMLParser(options);
 
-$.get('../data/fred-path.gpx', function(data)
+$.get('../data/vane-path.gpx', function(data)
 	{
 		// console.log(data)
 		var name = data.getElementsByTagName("name")[0].textContent;
 		var desc = data.getElementsByTagName("desc")[0].textContent;
 		var track_xml = data.getElementsByTagName("trk")[0].innerHTML;
+		var waypoints_xml = data.getElementsByTagName("wpts")[0].innerHTML;
 		
 		// replace links with http links
 		// this regex was provided by openai :)
 		desc = desc.replace(/\[url=([^\]]+)\]([^\[]+)\[\/url\]/g, '<a href="$1">$2</a>');
 
 		var track_segment = parser.parse(track_xml).trkseg;
+		var wp = parser.parse(waypoints_xml);
+
+		let waypoints = [];
+		for (pt of wp.wpt)
+		{
+			waypoints.push([pt.name, pt.desc])
+		}
 
 		let latlons = []
 		let elevs = []
@@ -165,6 +196,6 @@ $.get('../data/fred-path.gpx', function(data)
 			latlons.push([parseFloat(pt.lat), parseFloat(pt.lon)])
 			elevs.push(pt.ele);
 		}
-		make_path(latlons, elevs, name, desc);
+		make_path(latlons, elevs, name, desc, waypoints);
 	}
 );
