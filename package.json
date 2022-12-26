@@ -1,7 +1,7 @@
 {
-  "name": "test-fred",
+  "name": "colomap",
   "version": "1.0.0",
-  "description": "test session with node",
+  "description": "mapping color",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",

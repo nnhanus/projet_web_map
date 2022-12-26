@@ -162,7 +162,7 @@ function on_path_selection(path)
 	selected_path.polyline.setStyle({weight:5});
 	selected_path.polyline.redraw();
 
-	draw_canv(path.waypoints);
+	//draw_canv(path.waypoints);
 
 	trace_mapwaypoints(path.waypoints);
 	trace_elevations(path);
