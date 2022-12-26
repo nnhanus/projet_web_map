@@ -33,7 +33,7 @@ body .btn-secondary{
 }
 
 #header {
-  background: #6F2DA8;
+  background: #6f2da8;
   color: #e8d7fc;
   padding: 20px;
   display: grid;
@@ -95,13 +95,24 @@ body .btn-secondary{
   padding: 10px;
 }
 
+/* #content-center
+{
+	height: calc(100vh - 200px) !important;
+} */
+
 #map 
 { 
 	/* display: flex;
 	flex-flow: column; */
 	height: calc(100vh - 200px);
+	/* height: 50% !important; */
 	/* height: 100%; */
 }
+
+/* #elevations
+{
+	height: 50% !important;
+} */
 
 /*all elements in a popup have black font*/
 popup *

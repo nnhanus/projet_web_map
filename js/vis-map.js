@@ -7,7 +7,6 @@ var all_paths = [];
 var elevations = document.getElementById('elevations');
 var map_html = document.getElementById('map');
 
-
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', 
 {
 	maxZoom: 19,
@@ -33,38 +32,92 @@ function on_deselect()
 
 function trace_elevations(path)
 {
-	var cnv_h = 200;
-
-	var ctx = elevations.getContext("2d");
-	ctx.canvas.width = map_html.offsetWidth;
-	ctx.canvas.height = cnv_h;
-	map_html.style.height = "calc(100vh-400px)"
-	
-	var max_dist = path.distances[path.distances.length-1];
-
-	var cnv_w = elevations.offsetWidth;
-
-	ctx.fillStyle = 'black';
-	ctx.fillRect(0, 0, cnv_w, cnv_h);
-
-	ctx.beginPath();
-	ctx.strokeStyle = 'white';
-	ctx.lineWidth = 3;
-	ctx.moveTo(0, cnv_h);
-	let max_e = 0;
-
-	for(var i = 0; i < path.elevations.length; i++)
+	function dist(p0,p1){ return Math.sqrt(Math.pow(p1[0]-p0[0],2) + Math.pow(p1[1]-p0[1],2));}
+	let wp_idxs = []
+	for(var waypoint of path.waypoints)
 	{
-		if(path.elevations[i] > max_e) max_e = path.elevations[i];
+		var min_d = Infinity;
+		var index = undefined;
+		let wp = [parseFloat(waypoint.lat), parseFloat(waypoint.lon)];
+		for(var i = 0; i < path.points.length; i++)
+		{
+			let point = path.points[i];
+			let d = dist(point, wp);
+			
+			if(d < min_d)
+			{
+				min_d = d;
+				index = i;
+			}
+		}
+		wp_idxs.push(index);
 	}
 
-	for(var i = 0; i < path.distances.length; i++)
+	const data = 
 	{
-		ctx.lineTo(cnv_w*path.distances[i]/max_dist, cnv_h-cnv_h*path.elevations[i]/max_e);
-	}
-	ctx.stroke();
+		datasets: 
+		[
+			{
+				label: 'Elevations',
+				data: path.distances.map((x, i) => ({ x, y: path.elevations[i] })),
+				backgroundColor: 'rgba(111, 45, 168, 0.2)',
+				borderColor: 'rgba(111, 45, 168, 1)', 
+				borderWidth: 0,
+				pointRadius: 0, // Set the radius of the points
+				pointHoverRadius: 0, // Set the hover radius of the points
+				pointStyle: 'circle', // Set the style of the points to circles
+				showTooltips: false,
+				type: 'line',
+			},
 
-	ctx.closePath();
+			{
+				label: 'POIs',
+				data: wp_idxs.map((idx) => ({ x: path.distances[idx], y: path.elevations[idx] })),
+				backgroundColor: 'rgba(45, 111, 168, 0.2)',
+				borderColor: 'rgba(45, 111, 168, 1)',
+				borderWidth: 1,
+				pointRadius: 5, // Set the radius of the points
+				pointHoverRadius: 8, // Set the hover radius of the points
+				pointStyle: 'circle', // Set the style of the points to circles
+				showLine: false,
+				type: 'line',
+			},
+
+		]
+	};
+
+	// Create the chart
+	const myChart = new Chart(elevations.getContext('2d'), 
+	{
+		type: 'scatter',
+		data: data,
+		options: 
+		{
+			responsive: true,
+			maintainAspectRatio: true,
+			tooltips: { enabled: false }
+		}
+	});
+
+	myChart.canvas.onclick = 
+	function(event) 
+	{
+		const activePoints = myChart.getElementAtEvent(event);
+		if (activePoints && activePoints.length) 
+		{
+			const selected_point = activePoints[0];
+			console.log(selected_point);
+			const dataSetIndex = selected_point._datasetIndex;
+			const dataIndex = selected_point._index;
+
+			if(dataSetIndex == 1)
+			{
+				let waypoint = path.waypoints[dataIndex];
+				//todo : show some popup here.
+				alert(waypoint.name + ' ' + waypoint.desc);
+			}
+		}
+	};
 }
 
 function display_popup_at(latlon, title, description)
@@ -88,7 +141,7 @@ function trace_mapwaypoints(waypoints)
 		let name = point.name;
 		let desc = point.desc;
 		var circle = L
-		.circle([point.lat, point.lon], {radius:2})
+		.circle([point.lat, point.lon], {radius: 20})
 		.addTo(map)
 		.on('click', 
 		(event)=>
@@ -131,10 +184,10 @@ function make_path(points, elevs, name, desc, waypoints)
 			dists.push(curr_dist);
 		}
 		
-		// console.log(dists);
 		var path =
 		{
 			name: name,
+			points: points,
 			description: desc,
 			polyline: polyline,
 			waypoints: waypoints,
@@ -181,12 +234,11 @@ function draw_canv(waypoints)
 		ctx.fillText(pt.name, 0, ord);
 		ctx.fillText(pt.desc, 20, ord);
 		ord += 20;
-		// console.log(pt.desc);
 	}
 
 }
 
-const options = 
+const parser = new XMLParser(
 {
 	attributeNamePrefix : "",
 	// attrNodeName: false,
@@ -194,14 +246,12 @@ const options =
 	ignoreAttributes : false,
 	ignoreNameSpace: false,
 	CDATASection: true, //idk how this works but it should help maybe
-};
-
-const parser = new XMLParser(options);
+});
 
 $.get('../data/vane-path.gpx', function(data)
 	{
-		// console.log(data)
 		var name = data.getElementsByTagName("name")[0].textContent;
+		// console.log(data)
 		var desc = data.getElementsByTagName("desc")[0].textContent;
 		var track_xml = data.getElementsByTagName("trk")[0].innerHTML;
 		var waypoints_xml = data.getElementsByTagName("wpts")[0].innerHTML;
