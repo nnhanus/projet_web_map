@@ -4,96 +4,95 @@ body {
   background-color: black;
 }
 
-body .btn-secondary{
+body .btn-secondary
+{
   background-color:#7b2cbf;
   border-color: #e8d7fc;
 }
 
-#loginbox{
-    border:1px solid grey;
-    padding:10px;
-    border-radius:6px;
-    background: rgb(249,249,249);
-    background: linear-gradient(-45deg, #c8b6ff 0%, #7b2cbf 50%, #240046 100%);
-    box-shadow: 10px 5px 5px rgba(0,0,0,0.5);
+#loginbox
+{
+	border:1px solid grey;
+	padding:10px;
+	border-radius:6px;
+	background: rgb(249,249,249);
+	background: linear-gradient(-45deg, #c8b6ff 0%, #7b2cbf 50%, #240046 100%);
+	box-shadow: 10px 5px 5px rgba(0,0,0,0.5);
 }
 
-* {
+* 
+{
   box-sizing: border-box;
   color: #e8d7fc;
 }
 
-#container {
+#container 
+{
   padding: 10px;
   display:grid;
   grid-template-columns: repeat(1, 1fr);
-  grid-template-rows: 100px auto 50px;
+  grid-template-rows: min-content auto 50px;
   height: calc(100vh);
 	background-color: black;
 }
 
-#header {
+#header 
+{
   background: #6f2da8;
   color: #e8d7fc;
-  padding: 20px;
-  display: grid;
-  grid-template-columns: auto 200px;
-  text-align: center;
+  padding: 10px;
+	align-items: center;
+  /* display: grid;
+  grid-template-columns: repeat(2, 1fr); */
 }
 
-#center{
+#center
+{
   background-color: black
 }
 
-#content {
-  background-color: black;
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-}
-
-#content-center {
-  grid-column: 2/6;
-  /* border-top: solid rgb(200, 200, 200) 2px;
-  border-bottom: solid rgb(200, 200, 200) 2px; */
-  padding: 10px;
-
-
-	/* display: flex;
-	flex-flow: column;
-	height: calc(100vh - 200px); */
-}
-
-#content-left {
-  /* border: solid rgb(200, 200, 200) 2px; */
-  padding: 10px;
-  color : #e8d7fc
-}
-
-#myCanvas
+#content 
 {
-  height: (100%-80px);
-  width: 100%;
-  background-color: white;
+  background-color: black;
+  /* display: grid;
+  grid-template-columns: repeat(6, 1fr); */
 }
 
-#content-right {
-  /* border: solid rgb(200, 200, 200) 2px; */
-  padding: 10px;
-  color: #e8d7fc;
+#content-center
+{
+	/* grid-column: 1/6; */
+	padding: 10px;
 }
 
-#footer {
+#map-ui
+{
+	padding: 10px;
+	z-index: 1000; /* same level as leaflet zoom controls */
+	position: absolute;
+	background-color: black;
+	right: 0;
+}
+
+#main-wrapper 
+{
+	display: grid;
+	grid-template-rows: auto auto;
+}
+
+#footer 
+{
   background: #6F2DA8;
 	color:white;
   text-align: center;
 }
 
-.nav-left{
+/* .nav-left
+{
   display: grid;
   grid-template-rows: repeat(3, 1fr);
   grid-gap: 5px;
   padding: 10px;
-}
+} */
 
 /* #content-center
 {
@@ -109,10 +108,10 @@ body .btn-secondary{
 	/* height: 100%; */
 }
 
-/* #elevations
+#chart-wrapper
 {
-	height: 50% !important;
-} */
+	height: calc(100vh - 50px);
+}
 
 /*all elements in a popup have black font*/
 popup *

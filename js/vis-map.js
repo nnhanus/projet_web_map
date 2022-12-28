@@ -1,11 +1,12 @@
+var elevations = document.getElementById('elevations');
+var map_html = document.getElementById('map');
+var main_wrapper = document.getElementById('main-wrapper');
+
 var map = L.map('map').setView([51.505, -0.09], 13);
 map.on('click', on_deselect);
 var selected_path;
 var selected_wp = [];
 var all_paths = [];
-
-var elevations = document.getElementById('elevations');
-var map_html = document.getElementById('map');
 
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', 
 {
@@ -18,13 +19,16 @@ function on_deselect()
 {
 	if(selected_path)
 	{
+		// change polyline style
 		selected_path.polyline.setStyle({weight:3});
 		selected_path = undefined;
 
+		// hiding elevation canvas
 		var ctx = elevations.getContext("2d");
 		ctx.canvas.width = 0;
 		ctx.canvas.height = 0;
 
+		// removing waypoints from the map
 		for(wp of selected_wp) wp.remove();
 		selected_wp = [];
 	}
@@ -34,6 +38,7 @@ function trace_elevations(path)
 {
 	function dist(p0,p1){ return Math.sqrt(Math.pow(p1[0]-p0[0],2) + Math.pow(p1[1]-p0[1],2));}
 	let wp_idxs = []
+	// getting closest point to POIs
 	for(var waypoint of path.waypoints)
 	{
 		var min_d = Infinity;
@@ -53,6 +58,9 @@ function trace_elevations(path)
 		wp_idxs.push(index);
 	}
 
+	// setting data :
+	// - line chart of elevations
+	// - circles on POIs
 	const data = 
 	{
 		datasets: 
@@ -86,7 +94,7 @@ function trace_elevations(path)
 		]
 	};
 
-	// Create the chart
+	// Create the chart (no tooltip, responsive = fill container)
 	const myChart = new Chart(elevations.getContext('2d'), 
 	{
 		type: 'scatter',
@@ -106,7 +114,6 @@ function trace_elevations(path)
 		if (activePoints && activePoints.length) 
 		{
 			const selected_point = activePoints[0];
-			console.log(selected_point);
 			const dataSetIndex = selected_point._datasetIndex;
 			const dataIndex = selected_point._index;
 
@@ -170,43 +177,45 @@ function on_path_selection(path)
 
 function make_path(points, elevs, name, desc, waypoints)
 {
-		var polyline = L.polyline(points, {color: 'black'}).addTo(map);
+	var polyline = L
+	.polyline(points, {color: 'black'})
+	.addTo(map);
 
-		map.fitBounds(polyline.getBounds());
+	map.fitBounds(polyline.getBounds());
 
-		function dist(p0,p1){ return Math.sqrt(Math.pow(p1[0]-p0[0],2) + Math.pow(p1[1]-p0[1],2));}
-		
-		var curr_dist = 0;
-		var dists = [0];
-		for(var i = 1; i < points.length; i++)
-		{
-			curr_dist = curr_dist + dist(points[i], points[i-1]);
-			dists.push(curr_dist);
-		}
-		
-		var path =
-		{
-			name: name,
-			points: points,
-			description: desc,
-			polyline: polyline,
-			waypoints: waypoints,
-			elevations: elevs,
-			distances: dists,
-			color: 'black',
-		};
-
-		all_paths.push(path);
-
-		polyline.on('click', 
-		(event) =>
-		{
-			// prevent the map from getting the event.
-			L.DomEvent.stopPropagation(event); 
-			display_popup_at(event.latlng, name, desc);
-			on_path_selection(path);
-		});
+	function dist(p0,p1){ return Math.sqrt(Math.pow(p1[0]-p0[0],2) + Math.pow(p1[1]-p0[1],2));}
+	
+	var curr_dist = 0;
+	var dists = [0];
+	for(var i = 1; i < points.length; i++)
+	{
+		curr_dist = curr_dist + dist(points[i], points[i-1]);
+		dists.push(curr_dist);
 	}
+		
+	var path =
+	{
+		name: name,
+		points: points,
+		description: desc,
+		polyline: polyline,
+		waypoints: waypoints,
+		elevations: elevs,
+		distances: dists,
+		color: 'black',
+	};
+
+	all_paths.push(path);
+
+	polyline.on('click', 
+	(event) =>
+	{
+		// prevent the map from getting the event.
+		L.DomEvent.stopPropagation(event);
+		display_popup_at(event.latlng, name, desc);
+		on_path_selection(path);
+	});
+}
 
 function set_team(color)
 {
@@ -235,7 +244,6 @@ function draw_canv(waypoints)
 		ctx.fillText(pt.desc, 20, ord);
 		ord += 20;
 	}
-
 }
 
 const parser = new XMLParser(
@@ -251,7 +259,6 @@ const parser = new XMLParser(
 $.get('../data/vane-path.gpx', function(data)
 	{
 		var name = data.getElementsByTagName("name")[0].textContent;
-		// console.log(data)
 		var desc = data.getElementsByTagName("desc")[0].textContent;
 		var track_xml = data.getElementsByTagName("trk")[0].innerHTML;
 		var waypoints_xml = data.getElementsByTagName("wpts")[0].innerHTML;
