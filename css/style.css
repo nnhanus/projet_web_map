@@ -42,8 +42,6 @@ body .btn-secondary
   color: #e8d7fc;
   padding: 10px;
 	align-items: center;
-  /* display: grid;
-  grid-template-columns: repeat(2, 1fr); */
 }
 
 #center
@@ -103,14 +101,14 @@ body .btn-secondary
 { 
 	/* display: flex;
 	flex-flow: column; */
-	height: calc(100vh - 200px);
+	height: calc(100vh - 150px);
 	/* height: 50% !important; */
 	/* height: 100%; */
 }
 
 #chart-wrapper
 {
-	height: calc(100vh - 50px);
+	/* height: calc(100vh - 50px); */
 }
 
 /*all elements in a popup have black font*/

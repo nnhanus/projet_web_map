@@ -8,6 +8,9 @@ var selected_path;
 var selected_wp = [];
 var all_paths = [];
 
+var current_chart;
+var chart_canvas;
+
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', 
 {
 	maxZoom: 19,
@@ -24,9 +27,7 @@ function on_deselect()
 		selected_path = undefined;
 
 		// hiding elevation canvas
-		var ctx = elevations.getContext("2d");
-		ctx.canvas.width = 0;
-		ctx.canvas.height = 0;
+		elevations.style.display = 'none';
 
 		// removing waypoints from the map
 		for(wp of selected_wp) wp.remove();
@@ -36,6 +37,9 @@ function on_deselect()
 
 function trace_elevations(path)
 {
+	// show elevations again
+	elevations.style.display = 'block';
+
 	function dist(p0,p1){ return Math.sqrt(Math.pow(p1[0]-p0[0],2) + Math.pow(p1[1]-p0[1],2));}
 	let wp_idxs = []
 	// getting closest point to POIs
@@ -106,6 +110,9 @@ function trace_elevations(path)
 			tooltips: { enabled: false }
 		}
 	});
+
+	current_chart = myChart;
+	chart_canvas = myChart.canvas;
 
 	myChart.canvas.onclick = 
 	function(event) 
@@ -224,25 +231,6 @@ function set_team(color)
 		selected_path.polyline.setStyle({color:color});
 		selected_path.color = color;
 		selected_path.polyline.redraw();
-	}
-}
-
-function draw_canv(waypoints)
-{
-	var canv = document.getElementById('myCanvas');
-	var ctx = canv.getContext('2d');
-	var ord = 10;
-
-	ctx.moveTo(20, 0);
-	ctx.lineTo(20, 400);
-	ctx.stroke();
-
-	
-	for (pt of waypoints)
-	{
-		ctx.fillText(pt.name, 0, ord);
-		ctx.fillText(pt.desc, 20, ord);
-		ord += 20;
 	}
 }
 
