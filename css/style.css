@@ -52,13 +52,10 @@ body .btn-secondary
 #content 
 {
   background-color: black;
-  /* display: grid;
-  grid-template-columns: repeat(6, 1fr); */
 }
 
 #content-center
 {
-	/* grid-column: 1/6; */
 	padding: 10px;
 }
 
@@ -68,13 +65,7 @@ body .btn-secondary
 	z-index: 1000; /* same level as leaflet zoom controls */
 	position: absolute;
 	background-color: black;
-	right: 0;
-}
-
-#main-wrapper 
-{
-	display: grid;
-	grid-template-rows: auto auto;
+	right: 0; /* stick to the right border of the window*/
 }
 
 #footer 
@@ -84,32 +75,12 @@ body .btn-secondary
   text-align: center;
 }
 
-/* .nav-left
-{
-  display: grid;
-  grid-template-rows: repeat(3, 1fr);
-  grid-gap: 5px;
-  padding: 10px;
-} */
-
-/* #content-center
-{
-	height: calc(100vh - 200px) !important;
-} */
-
 #map 
 { 
-	/* display: flex;
-	flex-flow: column; */
 	height: calc(100vh - 150px);
-	/* height: 50% !important; */
-	/* height: 100%; */
 }
 
-#chart-wrapper
-{
-	/* height: calc(100vh - 50px); */
-}
+
 
 /*all elements in a popup have black font*/
 popup *

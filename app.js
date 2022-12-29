@@ -46,7 +46,8 @@ app.use(sessions({
 var session;
 
 // to make session user variable available everywhere
-app.use(function(req, res, next) {
+app.use(function(req, res, next) 
+{
   res.locals.user = req.session.user;
   next();
 });
@@ -87,14 +88,17 @@ app.set('layout', './layouts/base-layout.ejs')
 /*********************************/
 
 // MAIN
-app.get('/', (req, res) => 
+app.get('/', 
+function(req, res) 
 {
   session=req.session;
 	if(!session.userid) res.sendFile('views/login.html',{root:__dirname})
-	else res.render('index.ejs', {userid:session.userid})
+	else res.render('index.ejs', {userid: session.userid, username: session.username})
 })
 
-app.get('/vis', function (req, res) {
+app.get('/vis', 
+function (req, res) 
+{
   session=req.session;
   if(!session.userid) res.sendFile('views/login.html',{root:__dirname});
 	else

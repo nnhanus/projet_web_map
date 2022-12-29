@@ -6,13 +6,13 @@
 			<div class="form-check">
 					<input onclick="set_team('black')" class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault0" checked>
 				<label class="form-check-label" for="flexRadioDefault2">
-					Not assigned yet
+					Not assigned
 				</label>
 			</div>
 		
 			<% for(color of team_colors){ %>
 				<div class="color-form-check" >
-					<input style="background-color: <%= color %>;" onclick="set_team('<%= color %>')" class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1">
+					<input onclick="set_team('<%= color %>')" style="background-color: <%= color %>;" class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault<%= color %>">
 					<label class="form-check-label" for="flexRadioDefault1">
 						Team <%= color %>
 					</label>
@@ -24,7 +24,9 @@
 
 	<div id="map">
 	</div>
-	<div id = chart-wrapper>
-		<canvas id="elevations" style="display: none;"></canvas>
-	</div>
+
+	<!-- <div id="chart-wrapper" style="width: 100%;"> -->
+		<!-- By default the elevations are hidden (nothing selected) -->
+		<canvas id="elevations" style="display: none; width: 100%;"> </canvas>
+	<!-- </div> -->
 </div>

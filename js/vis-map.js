@@ -98,7 +98,7 @@ function trace_elevations(path)
 		]
 	};
 
-	// Create the chart (no tooltip, responsive = fill container)
+	// Create the chart
 	const myChart = new Chart(elevations.getContext('2d'), 
 	{
 		type: 'scatter',
@@ -107,7 +107,23 @@ function trace_elevations(path)
 		{
 			responsive: true,
 			maintainAspectRatio: true,
-			tooltips: { enabled: false }
+			aspectRatio: 3, // = width/height
+			tooltips: 
+			{ 
+				enabled: true,
+				callbacks:
+				{
+					label: function(item)
+					{
+						if(item.datasetIndex != 1) return '';
+						else
+						{
+							let waypoint = path.waypoints[item.index];
+							return waypoint.name + ': ' + waypoint.desc;
+						}
+					}
+				} 
+			}
 		}
 	});
 
@@ -121,14 +137,13 @@ function trace_elevations(path)
 		if (activePoints && activePoints.length) 
 		{
 			const selected_point = activePoints[0];
-			const dataSetIndex = selected_point._datasetIndex;
-			const dataIndex = selected_point._index;
+			const datasetIndex = selected_point._datasetIndex;
+			const index = selected_point._index;
 
-			if(dataSetIndex == 1)
+			if(datasetIndex == 1) // if pois dataset
 			{
-				let waypoint = path.waypoints[dataIndex];
-				//todo : show some popup here.
-				alert(waypoint.name + ' ' + waypoint.desc);
+				let waypoint = path.waypoints[index];
+				alert(waypoint.name + ': ' + waypoint.desc);
 			}
 		}
 	};
