@@ -64,8 +64,9 @@ body .btn-secondary
 	padding: 10px;
 	z-index: 1000; /* same level as leaflet zoom controls */
 	position: absolute;
-	background-color: black;
 	right: 0; /* stick to the right border of the window*/
+	display: flex;
+	align-items: flex-end;
 }
 
 #footer 

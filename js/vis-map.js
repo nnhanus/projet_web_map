@@ -1,6 +1,7 @@
 var elevations = document.getElementById('elevations');
 var map_html = document.getElementById('map');
 var main_wrapper = document.getElementById('main-wrapper');
+var path_dropdown = document.getElementById('path-dropdown');
 
 var map = L.map('map').setView([51.505, -0.09], 13);
 map.on('click', on_deselect);
@@ -190,11 +191,24 @@ function on_path_selection(path)
 	
 	selected_path.polyline.setStyle({weight:5});
 	selected_path.polyline.redraw();
-
+	
 	//draw_canv(path.waypoints);
-
+	
 	trace_mapwaypoints(path.waypoints);
 	trace_elevations(path);
+}
+
+function select_path_from_name(name)
+{
+	for(var path of all_paths)
+	{
+		if(path.name == name)
+		{
+			map.fitBounds(path.polyline.getBounds());
+			on_path_selection(path);
+			return;
+		}
+	}
 }
 
 function make_path(points, elevs, name, desc, waypoints)
@@ -229,6 +243,12 @@ function make_path(points, elevs, name, desc, waypoints)
 
 	all_paths.push(path);
 
+	var path_element = document.createElement('li');
+	path_element.setAttribute('class', 'dropdown-item bg-black text-white');
+	path_element.setAttribute('onclick', 'select_path_from_name(\''+path.name+'\')');
+	path_element.innerHTML = path.name;
+	path_dropdown.appendChild(path_element);
+
 	polyline.on('click', 
 	(event) =>
 	{
@@ -259,27 +279,34 @@ const parser = new XMLParser(
 	CDATASection: true, //idk how this works but it should help maybe
 });
 
-$.get('../data/vane-path.gpx', function(data)
+function path_from_gpx(data)
+{
+	var name = data.getElementsByTagName("name")[0].textContent;
+	var desc = data.getElementsByTagName("desc")[0].textContent;
+	var track_xml = data.getElementsByTagName("trk")[0].innerHTML;
+	var waypoints_elems = data.getElementsByTagName("wpts");
+	var waypoints = [];
+	if(waypoints_elems && waypoints_elems.length)
 	{
-		var name = data.getElementsByTagName("name")[0].textContent;
-		var desc = data.getElementsByTagName("desc")[0].textContent;
-		var track_xml = data.getElementsByTagName("trk")[0].innerHTML;
-		var waypoints_xml = data.getElementsByTagName("wpts")[0].innerHTML;
-		
-		// replace links with http links
-		// this regex was provided by openai :)
-		desc = desc.replace(/\[url=([^\]]+)\]([^\[]+)\[\/url\]/g, '<a href="$1">$2</a>');
+		var waypoints_xml = waypoints_elems[0].innerHTML;
+		waypoints = parser.parse(waypoints_xml).wpt;
+	} 
+	
+	// replace links with http links
+	// this regex was provided by openai :)
+	desc = desc.replace(/\[url=([^\]]+)\]([^\[]+)\[\/url\]/g, '<a href="$1">$2</a>');
 
-		var track_segment = parser.parse(track_xml).trkseg;
-		var waypoints = parser.parse(waypoints_xml).wpt;
+	var track_segment = parser.parse(track_xml).trkseg;
 
-		let latlons = []
-		let elevs = []
-		for(pt of track_segment.trkpt)
-		{
-			latlons.push([parseFloat(pt.lat), parseFloat(pt.lon)])
-			elevs.push(pt.ele);
-		}
-		make_path(latlons, elevs, name, desc, waypoints);
+	let latlons = []
+	let elevs = []
+	for(pt of track_segment.trkpt)
+	{
+		latlons.push([parseFloat(pt.lat), parseFloat(pt.lon)])
+		elevs.push(pt.ele);
 	}
-);
+	make_path(latlons, elevs, name, desc, waypoints);
+}
+
+$.get('../data/fred-path.gpx', path_from_gpx);
+$.get('../data/vane-path.gpx', path_from_gpx);
