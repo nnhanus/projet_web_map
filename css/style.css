@@ -96,6 +96,11 @@ popup h1
 	font-size: large;
 }
 
+#a {
+	display: block;
+	padding: 14px 16px;
+	text-decoration: none;
+	}
 
 
 
