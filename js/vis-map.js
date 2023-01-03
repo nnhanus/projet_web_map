@@ -7,6 +7,8 @@ var all_paths = [];
 var elevations = document.getElementById('elevations');
 var map_html = document.getElementById('map');
 
+
+
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', 
 {
 	maxZoom: 19,

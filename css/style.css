@@ -76,6 +76,10 @@ body .btn-secondary{
   background-color: white;
 }
 
+#elevations{
+  height: 50%;
+}
+
 #content-right {
   /* border: solid rgb(200, 200, 200) 2px; */
   padding: 10px;
