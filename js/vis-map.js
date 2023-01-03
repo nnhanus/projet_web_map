@@ -1,11 +1,16 @@
+var elevations = document.getElementById('elevations');
+var map_html = document.getElementById('map');
+var main_wrapper = document.getElementById('main-wrapper');
+var path_dropdown = document.getElementById('path-dropdown');
+
 var map = L.map('map').setView([51.505, -0.09], 13);
 map.on('click', on_deselect);
 var selected_path;
 var selected_wp = [];
 var all_paths = [];
 
-var elevations = document.getElementById('elevations');
-var map_html = document.getElementById('map');
+var current_chart;
+var chart_canvas;
 
 
 
@@ -20,13 +25,14 @@ function on_deselect()
 {
 	if(selected_path)
 	{
+		// change polyline style
 		selected_path.polyline.setStyle({weight:3});
 		selected_path = undefined;
 
-		var ctx = elevations.getContext("2d");
-		ctx.canvas.width = 0;
-		ctx.canvas.height = 0;
+		// hiding elevation canvas
+		elevations.style.display = 'none';
 
+		// removing waypoints from the map
 		for(wp of selected_wp) wp.remove();
 		selected_wp = [];
 	}
@@ -34,8 +40,12 @@ function on_deselect()
 
 function trace_elevations(path)
 {
+	// show elevations again
+	elevations.style.display = 'block';
+
 	function dist(p0,p1){ return Math.sqrt(Math.pow(p1[0]-p0[0],2) + Math.pow(p1[1]-p0[1],2));}
 	let wp_idxs = []
+	// getting closest point to POIs
 	for(var waypoint of path.waypoints)
 	{
 		var min_d = Infinity;
@@ -55,6 +65,9 @@ function trace_elevations(path)
 		wp_idxs.push(index);
 	}
 
+	// setting data :
+	// - line chart of elevations
+	// - circles on POIs
 	const data = 
 	{
 		datasets: 
@@ -97,9 +110,28 @@ function trace_elevations(path)
 		{
 			responsive: true,
 			maintainAspectRatio: true,
-			tooltips: { enabled: false }
+			aspectRatio: 3, // = width/height
+			tooltips: 
+			{ 
+				enabled: true,
+				callbacks:
+				{
+					label: function(item)
+					{
+						if(item.datasetIndex != 1) return '';
+						else
+						{
+							let waypoint = path.waypoints[item.index];
+							return waypoint.name + ': ' + waypoint.desc;
+						}
+					}
+				} 
+			}
 		}
 	});
+
+	current_chart = myChart;
+	chart_canvas = myChart.canvas;
 
 	myChart.canvas.onclick = 
 	function(event) 
@@ -108,15 +140,13 @@ function trace_elevations(path)
 		if (activePoints && activePoints.length) 
 		{
 			const selected_point = activePoints[0];
-			console.log(selected_point);
-			const dataSetIndex = selected_point._datasetIndex;
-			const dataIndex = selected_point._index;
+			const datasetIndex = selected_point._datasetIndex;
+			const index = selected_point._index;
 
-			if(dataSetIndex == 1)
+			if(datasetIndex == 1) // if pois dataset
 			{
-				let waypoint = path.waypoints[dataIndex];
-				//todo : show some popup here.
-				alert(waypoint.name + ' ' + waypoint.desc);
+				let waypoint = path.waypoints[index];
+				alert(waypoint.name + ': ' + waypoint.desc);
 			}
 		}
 	};
@@ -163,52 +193,73 @@ function on_path_selection(path)
 	
 	selected_path.polyline.setStyle({weight:5});
 	selected_path.polyline.redraw();
-
+	
 	//draw_canv(path.waypoints);
-
+	
 	trace_mapwaypoints(path.waypoints);
 	trace_elevations(path);
 }
 
+function select_path_from_name(name)
+{
+	for(var path of all_paths)
+	{
+		if(path.name == name)
+		{
+			map.fitBounds(path.polyline.getBounds());
+			on_path_selection(path);
+			return;
+		}
+	}
+}
+
 function make_path(points, elevs, name, desc, waypoints)
 {
-		var polyline = L.polyline(points, {color: 'black'}).addTo(map);
+	var polyline = L
+	.polyline(points, {color: 'black'})
+	.addTo(map);
 
-		map.fitBounds(polyline.getBounds());
+	map.fitBounds(polyline.getBounds());
 
-		function dist(p0,p1){ return Math.sqrt(Math.pow(p1[0]-p0[0],2) + Math.pow(p1[1]-p0[1],2));}
-		
-		var curr_dist = 0;
-		var dists = [0];
-		for(var i = 1; i < points.length; i++)
-		{
-			curr_dist = curr_dist + dist(points[i], points[i-1]);
-			dists.push(curr_dist);
-		}
-		
-		var path =
-		{
-			name: name,
-			points: points,
-			description: desc,
-			polyline: polyline,
-			waypoints: waypoints,
-			elevations: elevs,
-			distances: dists,
-			color: 'black',
-		};
-
-		all_paths.push(path);
-
-		polyline.on('click', 
-		(event) =>
-		{
-			// prevent the map from getting the event.
-			L.DomEvent.stopPropagation(event); 
-			display_popup_at(event.latlng, name, desc);
-			on_path_selection(path);
-		});
+	function dist(p0,p1){ return Math.sqrt(Math.pow(p1[0]-p0[0],2) + Math.pow(p1[1]-p0[1],2));}
+	
+	var curr_dist = 0;
+	var dists = [0];
+	for(var i = 1; i < points.length; i++)
+	{
+		curr_dist = curr_dist + dist(points[i], points[i-1]);
+		dists.push(curr_dist);
 	}
+		
+	var path =
+	{
+		name: name,
+		points: points,
+		description: desc,
+		polyline: polyline,
+		waypoints: waypoints,
+		elevations: elevs,
+		distances: dists,
+		color: 'black',
+	};
+
+	all_paths.push(path);
+
+	var path_element = document.createElement('li');
+	path_element.setAttribute('class', 'dropdown-item bg-black text-white');
+	path_element.setAttribute('onclick', 'select_path_from_name(\''+path.name+'\')');
+	path_element.innerHTML = path.name;
+	path_dropdown.appendChild(path_element);
+
+	polyline.on('click', 
+	(event) =>
+	{
+		// prevent the map from getting the event.
+		L.DomEvent.stopPropagation(event);
+		display_popup_at(event.latlng, name, desc);
+		on_path_selection(path);
+	});
+}
 
 function set_team(color)
 {
@@ -218,26 +269,6 @@ function set_team(color)
 		selected_path.color = color;
 		selected_path.polyline.redraw();
 	}
-}
-
-function draw_canv(waypoints)
-{
-	var canv = document.getElementById('myCanvas');
-	var ctx = canv.getContext('2d');
-	var ord = 10;
-
-	ctx.moveTo(20, 0);
-	ctx.lineTo(20, 400);
-	ctx.stroke();
-
-	
-	for (pt of waypoints)
-	{
-		ctx.fillText(pt.name, 0, ord);
-		ctx.fillText(pt.desc, 20, ord);
-		ord += 20;
-	}
-
 }
 
 const parser = new XMLParser(
@@ -250,28 +281,34 @@ const parser = new XMLParser(
 	CDATASection: true, //idk how this works but it should help maybe
 });
 
-$.get('../data/vane-path.gpx', function(data)
+function path_from_gpx(data)
+{
+	var name = data.getElementsByTagName("name")[0].textContent;
+	var desc = data.getElementsByTagName("desc")[0].textContent;
+	var track_xml = data.getElementsByTagName("trk")[0].innerHTML;
+	var waypoints_elems = data.getElementsByTagName("wpts");
+	var waypoints = [];
+	if(waypoints_elems && waypoints_elems.length)
 	{
-		var name = data.getElementsByTagName("name")[0].textContent;
-		// console.log(data)
-		var desc = data.getElementsByTagName("desc")[0].textContent;
-		var track_xml = data.getElementsByTagName("trk")[0].innerHTML;
-		var waypoints_xml = data.getElementsByTagName("wpts")[0].innerHTML;
-		
-		// replace links with http links
-		// this regex was provided by openai :)
-		desc = desc.replace(/\[url=([^\]]+)\]([^\[]+)\[\/url\]/g, '<a href="$1">$2</a>');
+		var waypoints_xml = waypoints_elems[0].innerHTML;
+		waypoints = parser.parse(waypoints_xml).wpt;
+	} 
+	
+	// replace links with http links
+	// this regex was provided by openai :)
+	desc = desc.replace(/\[url=([^\]]+)\]([^\[]+)\[\/url\]/g, '<a href="$1">$2</a>');
 
-		var track_segment = parser.parse(track_xml).trkseg;
-		var waypoints = parser.parse(waypoints_xml).wpt;
+	var track_segment = parser.parse(track_xml).trkseg;
 
-		let latlons = []
-		let elevs = []
-		for(pt of track_segment.trkpt)
-		{
-			latlons.push([parseFloat(pt.lat), parseFloat(pt.lon)])
-			elevs.push(pt.ele);
-		}
-		make_path(latlons, elevs, name, desc, waypoints);
+	let latlons = []
+	let elevs = []
+	for(pt of track_segment.trkpt)
+	{
+		latlons.push([parseFloat(pt.lat), parseFloat(pt.lon)])
+		elevs.push(pt.ele);
 	}
-);
+	make_path(latlons, elevs, name, desc, waypoints);
+}
+
+$.get('../data/fred-path.gpx', path_from_gpx);
+$.get('../data/vane-path.gpx', path_from_gpx);
