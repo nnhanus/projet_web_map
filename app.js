@@ -4,29 +4,12 @@ const path = require('path')
 const expressLayouts = require('express-ejs-layouts') // Import express layouts 
 const app = express();              //Instantiate an express app, the main work horse of this server
 const port = 8080;                  //Save the port number where your server will be listening
-
-
+const bodyParser = require('body-parser');
+const fs = require('fs');
 
 
 
 /// TODOS:
-
-// Distribute path between users
-// Uncolored path, get path -> color it = make it unavailable (and save which group has it)
-// then un-assign paths
-// - server side : assign pass
-// - client side : choose path, quit path
-
-// Point of interest on path
-// Load POIs array and show the one next to a path 
-// - server side : -
-// - client side : - 
-
-// JSON datas :
-
-// Path : points[], color(default:black)
-// POIs : [ points, description, ?icon (pathto/svg...) ] 
-
 
 /*********************************/
 /** DEFINITIONS TO USE SESSIONS **/
@@ -58,8 +41,9 @@ app.use(function(req, res, next)
 /*********** USING FILES *********/
 /*********************************/
 // parsing the incoming data
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// also setting the limit size of request to a higher amont than the default value, same with parameter limit
+app.use(express.json({ limit: '8mb' }));
+app.use(express.urlencoded({ limit: '8mb', extended: true, parameterLimit: 1000000 }));
 
 //serving public file
 app.use(express.static(__dirname));
@@ -124,13 +108,135 @@ function (req, res)
 const userRoutes = require('./routes/user')
 app.use(userRoutes)
 
-const vispathRoutes = require('./routes/vispath')
+const vispathRoutes = require('./routes/vispath');
 app.use(vispathRoutes)
+
+
+/*********************************/
+/********SERVER DATABASE**********/
+/*********************************/
+
+var all_paths = [];
+
+function update_local()
+{
+	fs.writeFileSync('./data/data.json', JSON.stringify(all_paths));
+}
+
+function get_path(name)
+{
+	for(var path of all_paths)
+	{
+		if(path.name == name) return path;
+	}
+}
+
+app.post('/path-name', 
+(req, res) =>
+{
+	const path_data = req.body;	
+	// console.log('received new path', path_data);
+
+	if(!get_path(path_data.name)) 
+	{
+		path_data.color = 'black'; // default color
+		all_paths.push(path_data);
+	}
+	update_local();
+	res.sendStatus(200); // success.
+})
+
+app.post('/path-points',
+(req, res) =>
+{
+	const path_data = req.body;
+	// console.log('received path points', path_data);
+
+	var path = get_path(path_data.name);
+	if(path) 
+	{
+		path.points = path_data.points;
+		update_local();
+	}
+	res.sendStatus(200); // success.
+})
+
+app.post('/path-desc',
+(req, res) =>
+{
+	const path_data = req.body;
+	// console.log('received path desc', path_data);
+
+	var path = get_path(path_data.name);
+	if(path) 
+	{
+		path.description = path_data.description;
+		update_local();
+	}
+	res.sendStatus(200); // success.
+})
+
+app.post('/path-elevs',
+(req, res) =>
+{
+	const path_data = req.body;
+	// console.log('received path elevations', path_data);
+
+	var path = get_path(path_data.name);
+	if(path) 
+	{
+		path.elevations = path_data.elevations;
+		update_local();
+	}
+	res.sendStatus(200); // success.
+})
+
+
+app.post('/path-color',
+(req, res) =>
+{
+	const path_data = req.body;
+	// console.log('received path color change', path_data);
+
+	var path = get_path(path_data.name);
+	if(path) 
+	{
+		path.color = path_data.color;
+		update_local();
+	}
+	res.sendStatus(200); // success.
+})
+
+app.post('/path-pois', 
+(req, res) =>
+{
+	const data = req.body;
+	// console.log('received path POIs', data);
+
+	for(var path in all_paths)
+	{
+		if(path.name == data.name) path.waypoints = data.waypoints;
+	}
+
+	update_local();
+	res.sendStatus(200); // success.
+})
+
+app.get('/get-all-paths', 
+(req, res) => 
+{
+	const json = fs.readFileSync('./data/data.json');
+	const obj = JSON.parse(json);
+	// console.log(obj);
+	res.send(obj);
+});
+
 
 /*********************************/
 /******* Application start *******/
 /*********************************/
 
-app.listen(port, () => {
-    console.log(`Now listening on port ${port}`);
+app.listen(port, () => 
+{
+  console.log(`Now listening on port ${port}`);
 });

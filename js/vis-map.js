@@ -12,6 +12,112 @@ var all_paths = [];
 var current_chart;
 var chart_canvas;
 
+function get_local_path(name)
+{
+	for(var path of all_paths)
+	{
+		if(path.name == name) return path;
+	}
+}
+
+function update_all_paths_from_server()
+{
+	$.ajax
+	({
+		url: '/get-all-paths',
+		type: 'GET',
+		success: function(data) 
+		{
+			// console.log('Received server paths:');
+			// console.log(data);
+			for(var server_path of data)
+			{
+				var local_path = get_local_path(server_path.name);
+				if(!local_path) // path was imported by another user
+				{
+					make_local_path(server_path.points, server_path.elevations, server_path.name, server_path.description, server_path.waypoints);
+				}
+				else // update the path's color from the server
+				{
+					set_path_color(local_path, server_path.color);
+				}
+			}
+		},
+		error: function(xhr, status, error) 
+		{
+			console.log('Couldn\'t get path from server:', error);
+		}
+	})
+}
+
+//Get the paths from the server every 5 seconds.
+//todo : refine refresh time to be the most accurate and usable
+setInterval(update_all_paths_from_server, 5000);
+
+function display_popup_at(latlon, content)
+{
+	var popupcontent = ''
+		+'<popup>'
+		+ content
+		+'</popup>';
+	
+	L.popup()
+	.setLatLng(latlon)
+	.setContent(popupcontent)
+	.openOn(map);
+}
+
+function mapDrop(event)
+{
+	event.preventDefault();
+
+	for(var file of event.dataTransfer.files)
+	{
+		console.log(file);
+
+		const reader = new FileReader();
+		reader.addEventListener('load', 
+		(event) => 
+		{
+			const fileContent = event.target.result;
+			const gpx_doc = (new DOMParser()).parseFromString(fileContent, 'text/xml');
+			try 
+			{ 
+				path_from_gpx(gpx_doc); 
+			} 
+			catch (error) 
+			{ 
+				console.log('gpx read error : \n' + error);
+				const warning = 'Error reading gpx file : '+ file.name;
+				display_popup_at(map.getCenter(), warning);
+			}
+
+		});
+		reader.readAsText(file);
+	}
+}
+
+function format_name_desc_html(name, desc)
+{
+	return '<h1>' + name + '</h1>' + '<p>' + desc + '</p>'
+}
+
+function display_name_desc_popup_at(latlon, title, description)
+{
+	return display_popup_at(latlon, format_name_desc_html(title, description));
+}
+
+function postajax(url, data, callback)
+{
+	$.ajax
+	({
+		type: 'POST',
+		url: url,
+		data: data,
+		success: function(data){ callback(data) },
+	});
+}
+
 
 
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', 
@@ -152,20 +258,6 @@ function trace_elevations(path)
 	};
 }
 
-function display_popup_at(latlon, title, description)
-{
-	var popupcontent = ''
-		+'<popup>'
-		+ '<h1>' + title + '</h1>'
-		+ '<p>' + description + '</p>'
-		+'</popup>';
-	
-	L.popup()
-	.setLatLng(latlon)
-	.setContent(popupcontent)
-	.openOn(map);
-}
-
 function trace_mapwaypoints(waypoints)
 {
 	for(var point of waypoints)
@@ -179,7 +271,7 @@ function trace_mapwaypoints(waypoints)
 		(event)=>
 		{
 			L.DomEvent.stopPropagation(event); 
-			display_popup_at(event.latlng, name, desc);
+			display_name_desc_popup_at(event.latlng, name, desc);
 		});
 
 		selected_wp.push(circle);
@@ -202,18 +294,23 @@ function on_path_selection(path)
 
 function select_path_from_name(name)
 {
-	for(var path of all_paths)
-	{
-		if(path.name == name)
-		{
-			map.fitBounds(path.polyline.getBounds());
-			on_path_selection(path);
-			return;
-		}
-	}
+	const path = get_local_path(name);
+	map.fitBounds(path.polyline.getBounds())
+	on_path_selection(path);
 }
 
-function make_path(points, elevs, name, desc, waypoints)
+const parser = new XMLParser
+(
+{
+	attributeNamePrefix : "",
+	// attrNodeName: false,
+	// textNodeName : "#text",
+	ignoreAttributes : false,
+	ignoreNameSpace: false,
+	CDATASection: true, //idk how this works but it should help maybe
+});
+
+function make_local_path(points, elevs, name, desc, waypoints)
 {
 	var polyline = L
 	.polyline(points, {color: 'black'})
@@ -256,30 +353,44 @@ function make_path(points, elevs, name, desc, waypoints)
 	{
 		// prevent the map from getting the event.
 		L.DomEvent.stopPropagation(event);
-		display_popup_at(event.latlng, name, desc);
+		display_name_desc_popup_at(event.latlng, name, desc);
 		on_path_selection(path);
 	});
+}
+
+function make_path(points, elevs, name, desc, waypoints)
+{
+	make_local_path(points, elevs, name, desc, waypoints);
+
+	// Updating server side : 
+	// create path with name
+	// fill path data in multiple request when server received the name
+	postajax('/path-name', {name: name}, 
+	(_response)=>
+	{
+		console.log('Server received path name')
+		postajax('/path-desc', {name: name, description:desc}, (_response)=> {console.log('Server received path desc')});
+		postajax('/path-points', {name: name, points:points}, (_response)=> {console.log('Server received path points')});
+		postajax('/path-elevs', {name: name, elevations:elevs}, (_response)=> {console.log('Server received path elevations')});
+		if(waypoints) postajax('/path-pois', {name: name, waypoints: waypoints}, (_response)=> {console.log('Server received path pois')});
+	});
+}
+
+function set_path_color(path, color)
+{
+	path.polyline.setStyle({color:color});
+	path.color = color;
+	path.polyline.redraw();
 }
 
 function set_team(color)
 {
 	if(selected_path)
 	{
-		selected_path.polyline.setStyle({color:color});
-		selected_path.color = color;
-		selected_path.polyline.redraw();
+		set_path_color(selected_path, color);
+		postajax('/path-color', {name:selected_path.name, color:color}, (_e)=>{console.log('Server received color change')})
 	}
 }
-
-const parser = new XMLParser(
-{
-	attributeNamePrefix : "",
-	// attrNodeName: false,
-	// textNodeName : "#text",
-	ignoreAttributes : false,
-	ignoreNameSpace: false,
-	CDATASection: true, //idk how this works but it should help maybe
-});
 
 function path_from_gpx(data)
 {
@@ -295,7 +406,6 @@ function path_from_gpx(data)
 	} 
 	
 	// replace links with http links
-	// this regex was provided by openai :)
 	desc = desc.replace(/\[url=([^\]]+)\]([^\[]+)\[\/url\]/g, '<a href="$1">$2</a>');
 
 	var track_segment = parser.parse(track_xml).trkseg;
@@ -310,5 +420,8 @@ function path_from_gpx(data)
 	make_path(latlons, elevs, name, desc, waypoints);
 }
 
-$.get('../data/fred-path.gpx', path_from_gpx);
-$.get('../data/vane-path.gpx', path_from_gpx);
+// temporary debug, moved to server side (default paths, in the json directly).
+// $.get('../data/fred-path.gpx', path_from_gpx);
+// $.get('../data/vane-path.gpx', path_from_gpx);
+
+update_all_paths_from_server();

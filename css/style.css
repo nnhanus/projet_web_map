@@ -81,9 +81,16 @@ body .btn-secondary
 	height: calc(100vh - 150px);
 }
 
+.map-btn
+{
+	background-color: #6F2DA8;
+	color: white
+}
+
 
 
 /*all elements in a popup have black font*/
+popup,
 popup *
 {
 	color: black;
@@ -96,11 +103,12 @@ popup h1
 	font-size: large;
 }
 
-#a {
+#a 
+{
 	display: block;
 	padding: 14px 16px;
 	text-decoration: none;
-	}
+}
 
 
 
