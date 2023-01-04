@@ -222,15 +222,18 @@ app.post('/path-pois',
 	res.sendStatus(200); // success.
 })
 
-app.get('/get-all-paths', 
-(req, res) => 
+function get_all_paths_from_json()
 {
 	const json = fs.readFileSync('./data/data.json');
 	const obj = JSON.parse(json);
-	// console.log(obj);
-	res.send(obj);
-});
+	return obj;
+}
 
+app.get('/get-all-paths', 
+(req, res) => 
+{
+	res.send(get_all_paths_from_json());
+});
 
 /*********************************/
 /******* Application start *******/
@@ -238,5 +241,8 @@ app.get('/get-all-paths',
 
 app.listen(port, () => 
 {
-  console.log(`Now listening on port ${port}`);
+	// initializing local data with json
+	all_paths = get_all_paths_from_json();
+  console.log('Loaded ' + all_paths.length + ' paths from JSON.');
+  console.log(`Now listening on port ${port}...`);
 });
