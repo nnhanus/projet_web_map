@@ -210,13 +210,11 @@ app.post('/path-color',
 app.post('/path-pois', 
 (req, res) =>
 {
-	const data = req.body;
+	const path_data = req.body;
 	// console.log('received path POIs', data);
 
-	for(var path in all_paths)
-	{
-		if(path.name == data.name) path.waypoints = data.waypoints;
-	}
+	var path = get_path(path_data.name);
+	if(path) path.waypoints = path_data.waypoints;
 
 	update_local();
 	res.sendStatus(200); // success.
