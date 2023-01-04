@@ -8,9 +8,6 @@ const bodyParser = require('body-parser');
 const fs = require('fs');
 
 
-
-/// TODOS:
-
 /*********************************/
 /** DEFINITIONS TO USE SESSIONS **/
 /*********************************/
@@ -40,6 +37,7 @@ app.use(function(req, res, next)
 /*********************************/
 /*********** USING FILES *********/
 /*********************************/
+
 // parsing the incoming data
 // also setting the limit size of request to a higher amont than the default value, same with parameter limit
 app.use(express.json({ limit: '8mb' }));
@@ -227,11 +225,22 @@ function get_all_paths_from_json()
 	return obj;
 }
 
+app.post('/remove-path',
+(req, res)=>
+{
+	const path_data = req.body;
+	const path_idx = all_paths.findIndex((v,i,o) => v.name == path_data.name);
+	all_paths.splice(path_idx, 1);
+	update_local();
+	res.sendStatus(200);
+})
+
 app.get('/get-all-paths', 
 (req, res) => 
 {
 	res.send(get_all_paths_from_json());
 });
+
 
 /*********************************/
 /******* Application start *******/
